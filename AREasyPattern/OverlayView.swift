@@ -6,8 +6,8 @@ struct OverlayView: View {
 
     private let step: Float = 0.05;
 
-    private let buttonSize: CGFloat = 30
-    private let pad: CGFloat = 10
+    private let buttonSize: CGFloat = 45
+    private let pad: CGFloat = 40
 
     var body: some View {
         VStack {
@@ -53,9 +53,9 @@ struct OverlayView: View {
                             .font(.system(size: buttonSize))
                             .padding()
                     }.frame(width: buttonSize+pad, height: buttonSize+pad)
-                }.frame(width: 100)
+                }.frame(width: 160, height: 100)
                 Spacer().frame(idealWidth: .infinity)
-            }.padding()
+            }
         }
     }
 }
