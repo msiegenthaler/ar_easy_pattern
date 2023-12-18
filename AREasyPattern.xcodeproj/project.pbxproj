@@ -14,6 +14,7 @@
 		12D819A12B2F2E9500A3C937 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D819A02B2F2E9500A3C937 /* OverlayView.swift */; };
 		12D819A32B2F2EA800A3C937 /* PatternModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D819A22B2F2EA800A3C937 /* PatternModel.swift */; };
 		12D819A72B2F307B00A3C937 /* RealityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12D819A62B2F307B00A3C937 /* RealityKit.framework */; };
+		12D819A92B2F5B6200A3C937 /* PatternPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D819A82B2F5B6200A3C937 /* PatternPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		12D819A22B2F2EA800A3C937 /* PatternModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternModel.swift; sourceTree = "<group>"; };
 		12D819A42B2F301600A3C937 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		12D819A62B2F307B00A3C937 /* RealityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealityKit.framework; path = System/Library/Frameworks/RealityKit.framework; sourceTree = SDKROOT; };
+		12D819A82B2F5B6200A3C937 /* PatternPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 				12D819962B2F2E5B00A3C937 /* Assets.xcassets */,
 				12D819982B2F2E5B00A3C937 /* Preview Content */,
 				12D819A22B2F2EA800A3C937 /* PatternModel.swift */,
+				12D819A82B2F5B6200A3C937 /* PatternPicker.swift */,
 			);
 			path = AREasyPattern;
 			sourceTree = "<group>";
@@ -160,6 +163,7 @@
 				12D819A32B2F2EA800A3C937 /* PatternModel.swift in Sources */,
 				12D819A12B2F2E9500A3C937 /* OverlayView.swift in Sources */,
 				12D819952B2F2E5A00A3C937 /* ContentView.swift in Sources */,
+				12D819A92B2F5B6200A3C937 /* PatternPicker.swift in Sources */,
 				12D819932B2F2E5A00A3C937 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

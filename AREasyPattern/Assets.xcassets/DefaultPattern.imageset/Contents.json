@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "DefaultPattern.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

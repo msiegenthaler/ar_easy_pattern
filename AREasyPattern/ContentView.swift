@@ -17,6 +17,8 @@ struct ContentView : View {
 class ARModel: ObservableObject {
     @Published var anchor: AnchorEntity?
     @Published var pattern: ModelEntity?
+    /** url of the pattern above (to see if it has changed) */
+    @Published var patternUrl: URL?
 }
 
 protocol PatternVisualizer {
@@ -57,6 +59,18 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
 
         session.run(config, options: [.resetTracking, .removeExistingAnchors])
 
+
+        // load default pattern
+        if let image = UIImage(named: "DefaultPattern") {
+            if let pattern = createPattern(image: image, width: 0.21, height: 0.297) {
+                self.arModel.pattern = pattern
+            }
+        }
+
+        if let url = Bundle.main.url(forResource: "DefaultPattern", withExtension: "pdf") {
+            updatePattern(url: url)
+        }
+
         #if DEBUG
         print("View is set up")
         #endif
@@ -78,7 +92,7 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
             }
             
             #if DEBUG
-            print("Anchor detected")
+            print("Image Anchor detected")
             #endif
 
             // Add a plane node for this anchor
@@ -127,9 +141,38 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
         m.position.y = -0.001 // move back a bit so it won't obstruct the pattern
         return m
     }
-    
-    func createPattern(name: String, width: Float, height: Float) -> ModelEntity {
-        let texture = try! TextureResource.load(named: name)
+
+    func loadPdf(url: URL) -> (image: UIImage, widthInM: Float, heightInM: Float)? {
+        guard let pdf = CGPDFDocument(url as CFURL) else { return nil }
+        guard let page = pdf.page(at: 1) else { return nil }
+        let pageRect = page.getBoxRect(.mediaBox)
+        let w = 1500.0
+        let h = w*pageRect.height/pageRect.width
+        let scale = w / pageRect.width
+        let size = CGSize(width: w, height: h)
+        let renderer = UIGraphicsImageRenderer(size: size)
+
+        let image = renderer.image { ctx in
+            ctx.cgContext.saveGState()
+            ctx.cgContext.translateBy(x: 0.0, y: h)
+            ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+            ctx.cgContext.scaleBy(x: scale, y: scale)
+            ctx.cgContext.drawPDFPage(page)
+            ctx.cgContext.restoreGState()
+        }
+        let dpi = 72.0
+        let dpm = dpi/2.54*100
+        let widthInM = Float(pageRect.width/dpm)
+        let heightInM = Float(pageRect.height/dpm)
+        #if DEBUG
+        print("Size of pattern is \(widthInM)m x \(heightInM)m")
+        #endif
+        return (image, widthInM, heightInM)
+    }
+    func createPattern(image: UIImage, width: Float, height: Float) -> ModelEntity? {
+        guard let cgImage = image.cgImage else { return nil }
+        let options = TextureResource.CreateOptions.init(semantic: .normal)
+        guard let texture = try? TextureResource.generate(from: cgImage, options: options) else { return nil }
         let plane = MeshResource.generatePlane(width: width, height: height)
 
         let color = MaterialParameters.Texture(texture)
@@ -140,6 +183,29 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
         let entity = ModelEntity(mesh: plane, materials: [material])
         entity.transform.rotation = simd_quatf(angle: -Float.pi / 2, axis: [1, 0, 0])
         return entity
+    }
+    
+    func updatePattern(url: URL) {
+        #if DEBUG
+        print("Loading new pattern \(url)")
+        #endif
+
+        if let anchor = self.arModel.anchor {
+            if let oldPattern = self.arModel.pattern {
+                #if DEBUG
+                print("Removing old pattern")
+                #endif
+                anchor.removeChild(oldPattern)
+            }
+        }
+
+        guard let (image, width, height) = loadPdf(url: url) else { return }
+        guard let pattern = createPattern(image: image, width: width, height: height) else { return }
+        self.arModel.patternUrl = url
+        self.arModel.pattern = pattern
+        
+        guard let anchor = self.arModel.anchor else { return }
+        anchor.addChild(pattern)
     }
        
     mutating func addPlaneNode(for imageAnchor: ARImageAnchor) {
@@ -153,13 +219,12 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
                                         show3d: false)
         anchor.addChild(annotation)
 
-        //let pattern = createPattern(name: "Softshell", width: 0.841, height: 1.189) // the PDF in A0
-        let pattern = createPattern(name: "Wickelkragen", width: 1.7251, height: 0.9803) // the PDF size
-        pattern.position.x = patternModel.positionX
-        pattern.position.z = patternModel.positionY
-        self.arModel.pattern = pattern
+        if let pattern = self.arModel.pattern {
+            pattern.position.x = patternModel.positionX
+            pattern.position.z = patternModel.positionY
+            anchor.addChild(pattern)
+        }
 
-        anchor.addChild(pattern)
 
         view.scene.addAnchor(anchor)
 
@@ -169,6 +234,16 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
     
     func updateUIView(_ view: ARView, context: Context) {
         DispatchQueue.main.async {
+            if let url = self.patternModel.patternUrl {
+                if let oldUrl = self.arModel.patternUrl {
+                    if (url != oldUrl) {
+                        updatePattern(url: url)
+                    }
+                } else {
+                    updatePattern(url: url)
+                }
+            }
+
             if let pattern = self.arModel.pattern {
                 pattern.position.x = patternModel.positionX
                 pattern.position.z = patternModel.positionY
