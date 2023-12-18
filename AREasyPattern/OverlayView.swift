@@ -14,48 +14,62 @@ struct OverlayView: View {
         VStack {
             Spacer()
             HStack(alignment: .bottom) {
-                VStack(alignment: .center) {
-                    Button {
-                        patternModel.positionY = patternModel.positionY - step
-                    }label: {
-                        Label("Up", systemImage: "chevron.up.circle")
-                            .labelStyle(.iconOnly)
-                            .imageScale(.large)
-                            .font(.system(size: buttonSize))
-                            .padding()
-                    }.frame(width: buttonSize+pad, height: buttonSize+pad)
-                    HStack {
+                if (self.patternModel.patternUrl != nil) {
+                    VStack(alignment: .center) {
                         Button {
-                            patternModel.positionX = patternModel.positionX - step
+                            patternModel.positionY = patternModel.positionY - step
                         }label: {
-                            Label("Left", systemImage: "chevron.left.circle")
+                            Label("Up", systemImage: "chevron.up.circle")
                                 .labelStyle(.iconOnly)
                                 .imageScale(.large)
                                 .font(.system(size: buttonSize))
                                 .padding()
                         }.frame(width: buttonSize+pad, height: buttonSize+pad)
-                        Spacer()
+                        HStack {
+                            Button {
+                                patternModel.positionX = patternModel.positionX - step
+                            }label: {
+                                Label("Left", systemImage: "chevron.left.circle")
+                                    .labelStyle(.iconOnly)
+                                    .imageScale(.large)
+                                    .font(.system(size: buttonSize))
+                                    .padding()
+                            }.frame(width: buttonSize+pad, height: buttonSize+pad)
+                            Spacer()
+                            Button {
+                                patternModel.positionX = patternModel.positionX + step
+                            }label: {
+                                Label("Right", systemImage: "chevron.right.circle")
+                                    .labelStyle(.iconOnly)
+                                    .imageScale(.large)
+                                    .font(.system(size: buttonSize))
+                                    .padding()
+                            }.frame(width: buttonSize+pad, height: buttonSize+pad)
+                        }.frame(maxHeight: 0)
                         Button {
-                            patternModel.positionX = patternModel.positionX + step
+                            patternModel.positionY = patternModel.positionY + step
                         }label: {
-                            Label("Right", systemImage: "chevron.right.circle")
+                            Label("Down", systemImage: "chevron.down.circle")
                                 .labelStyle(.iconOnly)
                                 .imageScale(.large)
                                 .font(.system(size: buttonSize))
                                 .padding()
                         }.frame(width: buttonSize+pad, height: buttonSize+pad)
-                    }.frame(maxHeight: 0)
-                    Button {
-                        patternModel.positionY = patternModel.positionY + step
-                    }label: {
-                        Label("Down", systemImage: "chevron.down.circle")
-                            .labelStyle(.iconOnly)
-                            .imageScale(.large)
-                            .font(.system(size: buttonSize))
-                            .padding()
-                    }.frame(width: buttonSize+pad, height: buttonSize+pad)
-                }.frame(width: 160, height: 100)
+                    }.frame(width: 160, height: 100)
+                }
                 Spacer()
+                if (self.patternModel.patternUrl != nil) {
+                    Button {
+                        self.patternModel.invert = !self.patternModel.invert
+                    }label:{
+                        Label("Invert", systemImage:
+                                "swirl.circle.righthalf.filled")
+                        .labelStyle(.iconOnly)
+                        .imageScale(.large)
+                        .font(.system(size: buttonSize))
+                        .padding()
+                    }
+                }
                 Button {
                     showPicker = true
                 }label: {
@@ -69,6 +83,7 @@ struct OverlayView: View {
                         self.patternModel.patternUrl = url
                         self.patternModel.positionX = 0
                         self.patternModel.positionY = 0
+                        self.patternModel.invert = false
                     }
                 })
             }

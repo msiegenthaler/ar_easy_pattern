@@ -19,6 +19,7 @@ class ARModel: ObservableObject {
     @Published var pattern: ModelEntity?
     /** url of the pattern above (to see if it has changed) */
     @Published var patternUrl: URL?
+    @Published var invert: Bool = false
 }
 
 protocol PatternVisualizer {
@@ -62,7 +63,7 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
 
         // load default pattern
         if let image = UIImage(named: "DefaultPattern") {
-            if let pattern = createPattern(image: image, width: 0.21, height: 0.297) {
+            if let pattern = createPattern(image: image, width: 0.21, height: 0.297, invert: false) {
                 self.arModel.pattern = pattern
             }
         }
@@ -169,8 +170,23 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
         #endif
         return (image, widthInM, heightInM)
     }
-    func createPattern(image: UIImage, width: Float, height: Float) -> ModelEntity? {
-        guard let cgImage = image.cgImage else { return nil }
+
+    func invertImage(image: UIImage) -> UIImage {
+        guard let ciImage = CIImage(image: image) else { return image }
+        guard let filter = CIFilter(name: "CIColorInvert") else { return image }
+        filter.setValue(ciImage, forKey: kCIInputImageKey)
+
+        let context = CIContext(options: nil)
+        if let outputCIImage = filter.outputImage,
+           let outputCGImage = context.createCGImage(outputCIImage, from: outputCIImage.extent) {
+            return UIImage(cgImage: outputCGImage)
+        }
+        return image
+    }
+
+    func createPattern(image: UIImage, width: Float, height: Float, invert: Bool) -> ModelEntity? {
+        let img = invert ? invertImage(image: image) : image
+        guard let cgImage = img.cgImage else { return nil }
         let options = TextureResource.CreateOptions.init(semantic: .normal)
         guard let texture = try? TextureResource.generate(from: cgImage, options: options) else { return nil }
         let plane = MeshResource.generatePlane(width: width, height: height)
@@ -200,9 +216,10 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
         }
 
         guard let (image, width, height) = loadPdf(url: url) else { return }
-        guard let pattern = createPattern(image: image, width: width, height: height) else { return }
+        guard let pattern = createPattern(image: image, width: width, height: height, invert: self.patternModel.invert) else { return }
         self.arModel.patternUrl = url
         self.arModel.pattern = pattern
+        self.arModel.invert = self.patternModel.invert
         
         guard let anchor = self.arModel.anchor else { return }
         anchor.addChild(pattern)
@@ -236,7 +253,7 @@ struct RealityKitView: UIViewRepresentable, PatternVisualizer {
         DispatchQueue.main.async {
             if let url = self.patternModel.patternUrl {
                 if let oldUrl = self.arModel.patternUrl {
-                    if (url != oldUrl) {
+                    if (url != oldUrl || self.patternModel.invert != self.arModel.invert) {
                         updatePattern(url: url)
                     }
                 } else {
