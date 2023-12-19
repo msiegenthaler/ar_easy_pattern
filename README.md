@@ -3,7 +3,7 @@ AR Easy Pattern overlays a sewing pattern in the correct size over the camera im
 # Prepare
 Download the anchor that is used to "home" the pattern and print in in color in A4 paper. The square has to be 15cm x 15cm, otherwise the pattern will not be in the correct size.
 
-[Anchor.pdf](Assets/Anchor Cutout.pdf)
+[Anchor.pdf](Assets/Anchor.pdf)
 
 Then cut out the anchor along the dotted lines.
 
